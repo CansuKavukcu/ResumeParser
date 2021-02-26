@@ -7,6 +7,8 @@ import nltk
 import spacy
 import pandas as pd
 import docx2txt
+import urllib
+#import logging
 from . import constants as cs
 from spacy.matcher import Matcher
 from pdfminer.converter import TextConverter
@@ -169,12 +171,19 @@ def extract_skills(nlp_text, noun_chunks):
     :return: list of skills extracted
     '''
     tokens = [token.text for token in nlp_text if not token.is_stop]
-    data = pd.read_csv(os.path.join(os.path.dirname(__file__), 'skills.csv')) 
-    skills = list(data.columns.values)
+    #data = pd.read_csv(os.path.join(os.path.dirname(__file__), 'skills.csv')) 
+    #skills = list(data.columns.values)
+    link = "https://raw.githubusercontent.com/CansuKavukcu/LinkedIn-Skills-Crawler/master/output/all_skills.txt"
+    f = urllib.request.urlopen(link)
+    skillFileContent = f.read()
+    #logging.info("All Skills")
+    skills = skillFileContent.decode('utf-8').replace(",", "_").strip().split("\n")
+    adjustedSkills = [item.lower() for item in skills]
+    #logging.info(adjustedSkills)
     skillset = []
     # check for one-grams
     for token in tokens:
-        if token.lower() in skills:
+        if token.lower() in adjustedSkills:
             skillset.append(token)
     
     # check for bi-grams and tri-grams
